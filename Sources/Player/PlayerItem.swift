@@ -71,6 +71,7 @@ public final class PlayerItem: Equatable {
         .assign(to: &$content)
     }
 
+    // swiftlint:disable:next missing_docs
     public static func == (lhs: PlayerItem, rhs: PlayerItem) -> Bool {
         lhs === rhs
     }
@@ -290,7 +291,12 @@ extension PlayerItem {
 
     func updateTrackersProperties(matchingBehavior behavior: TrackingBehavior, to properties: PlayerProperties) {
         trackerAdapters(matchingBehavior: behavior).forEach { adapter in
-            adapter.updateProperties(to: properties)
+            adapter.updateProperties(to: .init(
+                playerProperties: properties,
+                time: properties.time(),
+                date: properties.date(),
+                metrics: properties.metrics()
+            ))
         }
     }
 
@@ -302,7 +308,12 @@ extension PlayerItem {
 
     func disableTrackers(matchingBehavior behavior: TrackingBehavior, with properties: PlayerProperties) {
         trackerAdapters(matchingBehavior: behavior).forEach { adapter in
-            adapter.disable(with: properties)
+            adapter.disable(with: .init(
+                playerProperties: properties,
+                time: properties.time(),
+                date: properties.date(),
+                metrics: properties.metrics()
+            ))
         }
     }
 
@@ -324,6 +335,7 @@ extension PlayerItem {
 }
 
 extension PlayerItem: CustomDebugStringConvertible {
+    // swiftlint:disable:next missing_docs
     public var debugDescription: String {
         "\(id)"
     }

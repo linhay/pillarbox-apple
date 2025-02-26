@@ -22,15 +22,19 @@ public final class CommandersActTracker: PlayerItemTracker {
     private let heartbeat = CommandersActHeartbeat()
     private var cancellable: AnyCancellable?
 
+    // swiftlint:disable:next missing_docs
     public init(configuration: Void) {}
 
+    // swiftlint:disable:next missing_docs
     public func enable(for player: AVPlayer) {}
 
+    // swiftlint:disable:next missing_docs
     public func updateMetadata(to metadata: [String: String]) {
         self.metadata = metadata
     }
 
-    public func updateProperties(to properties: PlayerProperties) {
+    // swiftlint:disable:next missing_docs
+    public func updateProperties(to properties: TrackerProperties) {
         if properties.isSeeking {
             notify(.seek, properties: properties)
         }
@@ -48,22 +52,24 @@ public final class CommandersActTracker: PlayerItemTracker {
         }
     }
 
+    // swiftlint:disable:next missing_docs
     public func updateMetricEvents(to events: [MetricEvent]) {}
 
-    public func disable(with properties: PlayerProperties) {
+    // swiftlint:disable:next missing_docs
+    public func disable(with properties: TrackerProperties) {
         notify(.stop, properties: properties)
         reset()
     }
 }
 
 private extension CommandersActTracker {
-    func notify(_ event: Event, properties: PlayerProperties) {
+    func notify(_ event: Event, properties: TrackerProperties) {
         updateStopwatch(event: event, properties: properties)
         sendEventIfNeeded(event: event, properties: properties)
         heartbeat.update(with: properties, labels: labels)
     }
 
-    func updateStopwatch(event: Event, properties: PlayerProperties) {
+    func updateStopwatch(event: Event, properties: TrackerProperties) {
         if event == .play && !properties.isBuffering {
             stopwatch.start()
         }
@@ -72,7 +78,7 @@ private extension CommandersActTracker {
         }
     }
 
-    func sendEventIfNeeded(event: Event, properties: PlayerProperties) {
+    func sendEventIfNeeded(event: Event, properties: TrackerProperties) {
         guard event != lastEvent else { return }
 
         switch (lastEvent, event) {
@@ -97,7 +103,7 @@ private extension CommandersActTracker {
 }
 
 private extension CommandersActTracker {
-    func labels(from properties: PlayerProperties) -> [String: String] {
+    func labels(from properties: TrackerProperties) -> [String: String] {
         var labels = metadata
 
         labels["media_player_display"] = "Pillarbox"
@@ -125,12 +131,12 @@ private extension CommandersActTracker {
         return labels
     }
 
-    func volume(from properties: PlayerProperties) -> String {
+    func volume(from properties: TrackerProperties) -> String {
         guard !properties.isMuted else { return "0" }
         return String(Int(AVAudioSession.sharedInstance().outputVolume * 100))
     }
 
-    func audioTrack(from properties: PlayerProperties) -> String {
+    func audioTrack(from properties: TrackerProperties) -> String {
         if case let .on(option) = properties.currentMediaOption(for: .audible) {
             return languageCode(from: option)
         }
@@ -139,7 +145,7 @@ private extension CommandersActTracker {
         }
     }
 
-    func audioDescription(from properties: PlayerProperties) -> String {
+    func audioDescription(from properties: TrackerProperties) -> String {
         if case let .on(option) = properties.currentMediaOption(for: .audible), option.hasMediaCharacteristic(.describesVideoForAccessibility) {
             return "true"
         }
@@ -148,7 +154,7 @@ private extension CommandersActTracker {
         }
     }
 
-    func subtitleOn(from properties: PlayerProperties) -> String {
+    func subtitleOn(from properties: TrackerProperties) -> String {
         if case let .on(option) = properties.currentMediaOption(for: .legible), !option.hasMediaCharacteristic(.containsOnlyForcedSubtitles) {
             return "true"
         }
@@ -157,7 +163,7 @@ private extension CommandersActTracker {
         }
     }
 
-    func subtitleSelection(from properties: PlayerProperties) -> String? {
+    func subtitleSelection(from properties: TrackerProperties) -> String? {
         if case let .on(option) = properties.currentMediaOption(for: .legible), !option.hasMediaCharacteristic(.containsOnlyForcedSubtitles) {
             return languageCode(from: option)
         }
@@ -166,15 +172,15 @@ private extension CommandersActTracker {
         }
     }
 
-    func mediaPosition(from properties: PlayerProperties) -> Int {
-        Int(properties.time().timeInterval())
+    func mediaPosition(from properties: TrackerProperties) -> Int {
+        Int(properties.time.timeInterval())
     }
 
     func playbackDuration() -> Int {
         Int(stopwatch.time())
     }
 
-    func timeshiftOffset(from properties: PlayerProperties) -> Int {
+    func timeshiftOffset(from properties: TrackerProperties) -> Int {
         Int(properties.endOffset().timeInterval())
     }
 

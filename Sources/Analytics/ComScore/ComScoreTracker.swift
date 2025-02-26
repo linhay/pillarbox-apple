@@ -17,18 +17,22 @@ public final class ComScoreTracker: PlayerItemTracker {
     private lazy var streamingAnalytics = ComScoreStreamingAnalytics()
     private var metadata: [String: String] = [:]
 
+    // swiftlint:disable:next missing_docs
     public init(configuration: Void) {}
 
+    // swiftlint:disable:next missing_docs
     public func enable(for player: AVPlayer) {
         createPlaybackSession()
     }
 
+    // swiftlint:disable:next missing_docs
     public func updateMetadata(to metadata: [String: String]) {
         self.metadata = metadata
         setMetadata(metadata)
     }
 
-    public func updateProperties(to properties: PlayerProperties) {
+    // swiftlint:disable:next missing_docs
+    public func updateProperties(to properties: TrackerProperties) {
         guard !metadata.isEmpty else { return }
 
         AnalyticsListener.capture(streamingAnalytics.configuration())
@@ -49,9 +53,11 @@ public final class ComScoreTracker: PlayerItemTracker {
         }
     }
 
+    // swiftlint:disable:next missing_docs
     public func updateMetricEvents(to events: [MetricEvent]) {}
 
-    public func disable(with properties: PlayerProperties) {
+    // swiftlint:disable:next missing_docs
+    public func disable(with properties: TrackerProperties) {
         streamingAnalytics = ComScoreStreamingAnalytics()
     }
 }
