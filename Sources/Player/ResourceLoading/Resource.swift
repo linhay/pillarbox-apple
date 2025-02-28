@@ -11,16 +11,16 @@ private let kContentKeySession = AVContentKeySession(keySystem: .fairPlayStreami
 private let kContentKeySessionQueue = DispatchQueue(label: "ch.srgssr.player.content_key_session")
 
 enum Resource {
-    case simple(url: URL)
+    case simple(url: URL, options: [String : Any])
     case custom(url: URL, delegate: AVAssetResourceLoaderDelegate)
     case encrypted(url: URL, delegate: AVContentKeySessionDelegate)
 
     private static let logger = Logger(category: "Resource")
 
-    private func asset(for url: URL, with configuration: PlayerConfiguration) -> AVURLAsset {
-        .init(url: url, options: [
-            AVURLAssetAllowsConstrainedNetworkAccessKey: configuration.allowsConstrainedNetworkAccess
-        ])
+    private func asset(for url: URL, options: [String : Any], with configuration: PlayerConfiguration) -> AVURLAsset {
+        var options = options ?? [:]
+        options[AVURLAssetAllowsConstrainedNetworkAccessKey] = configuration.allowsConstrainedNetworkAccess
+        return AVURLAsset(url: url, options: options)
     }
 
     func playerItem(configuration: PlayerConfiguration, limits: PlayerLimits) -> AVPlayerItem {
@@ -31,19 +31,21 @@ enum Resource {
 
     private func unlimitedPlayerItem(configuration: PlayerConfiguration) -> AVPlayerItem {
         switch self {
-        case let .simple(url: url):
-            return AVPlayerItem(asset: asset(for: url, with: configuration))
+        case let .simple(url: url, options: options):
+            return AVPlayerItem(asset: asset(for: url, options: options, with: configuration))
         case let .custom(url: url, delegate: delegate):
             return ResourceLoadedPlayerItem(
-                asset: asset(for: url, with: configuration),
+                asset: asset(for: url,
+                             options: [:],
+                             with: configuration),
                 resourceLoaderDelegate: delegate
             )
         case let .encrypted(url: url, delegate: delegate):
 #if targetEnvironment(simulator)
             Self.logger.error("FairPlay-encrypted assets cannot be played in the simulator")
-            return AVPlayerItem(asset: asset(for: url, with: configuration))
+            return AVPlayerItem(asset: asset(for: url, options: [:], with: configuration))
 #else
-            let asset = asset(for: url, with: configuration)
+            let asset = asset(for: url, options: [:], with: configuration)
             kContentKeySession.setDelegate(delegate, queue: kContentKeySessionQueue)
             kContentKeySession.addContentKeyRecipient(asset)
             kContentKeySession.processContentKeyRequest(withIdentifier: nil, initializationData: nil)
@@ -75,7 +77,7 @@ extension Resource {
 extension Resource: Equatable {
     static func == (lhs: Resource, rhs: Resource) -> Bool {
         switch (lhs, rhs) {
-        case let (.simple(url: lhsUrl), .simple(url: rhsUrl)):
+        case let (.simple(url: lhsUrl, _), .simple(url: rhsUrl, _)):
             return lhsUrl == rhsUrl
         case let (.custom(url: lhsUrl, delegate: lhsDelegate), .custom(url: rhsUrl, delegate: rhsDelegate)):
             return lhsUrl == rhsUrl && lhsDelegate === rhsDelegate

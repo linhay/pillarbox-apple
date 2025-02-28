@@ -225,11 +225,12 @@ public extension PlayerItem {
     /// - Returns: The item.
     static func simple(
         url: URL,
+        options: [String: Any] = [:],
         trackerAdapters: [TrackerAdapter<Void>] = [],
         configuration: PlayerItemConfiguration = .default
     ) -> Self {
         .init(
-            asset: .simple(url: url, configuration: configuration),
+            asset: .simple(url: url, options: options, configuration: configuration),
             trackerAdapters: trackerAdapters
         )
     }

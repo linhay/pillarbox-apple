@@ -25,8 +25,11 @@ public struct Asset<M> {
     ///   - metadata: The metadata associated with the asset.
     ///   - configuration: The configuration to apply to the player item.
     /// - Returns: The asset.
-    public static func simple(url: URL, metadata: M, configuration: PlayerItemConfiguration = .default) -> Self {
-        .init(resource: .simple(url: url), metadata: metadata, configuration: configuration)
+    public static func simple(url: URL,
+                              options: [String : Any] = [:],
+                              metadata: M,
+                              configuration: PlayerItemConfiguration = .default) -> Self {
+        .init(resource: .simple(url: url, options: options), metadata: metadata, configuration: configuration)
     }
 
     /// Returns an asset loaded with custom resource loading.
@@ -103,10 +106,11 @@ public extension Asset where M == Void {
     /// - Returns: The asset.
     static func simple(
         url: URL,
+        options: [String: Any] = [:],
         configuration: PlayerItemConfiguration = .default
     ) -> Self {
         .init(
-            resource: .simple(url: url),
+            resource: .simple(url: url, options: options),
             metadata: (),
             configuration: configuration
         )
